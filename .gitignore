@@ -1,7 +1,10 @@
 /coverage
 /demo/dist
+/demo/public/sub-s01
 /es
 /lib
 /node_modules
 /umd
 npm-debug.log*
+__pycache__/
+*.py[cod]

@@ -1,6 +1,6 @@
 {
   "name": "react-series-data-viewer",
-  "homepage": "https://armintaheri.github.io/react-series-data-viewer",
+  "homepage": "",
   "version": "1.0.0",
   "description": "react-series-data-viewer React component",
   "main": "lib/index.js",
@@ -18,10 +18,14 @@
     "start": "nwb serve-react-demo",
     "test": "nwb test-react",
     "test:coverage": "nwb test-react --coverage",
-    "test:watch": "nwb test-react --server"
+    "test:watch": "nwb test-react --server",
+    "protoc:python": "echo `pwd`; protoc --python_out='python/' protocol-buffers/chunk.proto",
+    "protoc:js": "protoc --js_out=import_style=commonjs,binary:src/ protocol-buffers/chunk.proto",
+    "protoc:all": "npm run protoc:python; npm run protoc:js"
   },
   "dependencies": {
     "gl-matrix": "^2.8.1",
+    "google-protobuf": "^3.6.1",
     "immutable": "^3.8.2",
     "ramda": "^0.25.0",
     "react-redux": "^5.0.7",
@@ -49,7 +53,6 @@
     "gh-pages": "^1.2.0"
   },
   "author": "",
-  "homepage": "",
   "license": "MIT",
   "repository": "",
   "keywords": [

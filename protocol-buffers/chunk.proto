@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message FloatChunk {
+  int32 index = 2;
+  int32 downsampling = 1;
+  repeated float samples = 3;
+}
