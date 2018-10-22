@@ -11,9 +11,10 @@ module.exports = {
       }
     }
   },
-  webpack: {
-    aliases: {
-      src: path.resolve("src")
-    }
+  babel: {
+    plugins: [
+      "flow-react-proptypes",
+      ["module-resolver", { alias: { src: path.resolve("src") } }]
+    ]
   }
 };

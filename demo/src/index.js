@@ -1,24 +1,32 @@
+// @flow
+
 import React, { Component } from "react";
 import { render } from "react-dom";
 
-import Example from "../../src";
-import { fetchChunk } from "../../src/chunks";
+import { EEGLabSeriesProvider, IntervalSelect } from "../../src";
+import pkg from "../../package.json";
 
-class Demo extends Component {
-  constructor(props) {
-    super(props);
-    fetchChunk(
-      `sub-s01/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg.chunks/raw/${0}/${0}/${0}/${0}.buf`
-    ).then(chunk => console.log(chunk.getSamplesList()));
-  }
-  render() {
-    return (
-      <div>
+const Demo = () => {
+  return (
+    <div>
+      <a href={pkg.repository}>
+        <img
+          style={{ position: "absolute", top: 0, left: 0, border: 0 }}
+          src="https://s3.amazonaws.com/github/ribbons/forkme_left_green_007200.png"
+          alt="Fork me on GitHub"
+        />
+      </a>
+      <div style={{ marginLeft: "150px" }}>
         <h1>react-series-data-viewer Demo</h1>
-        <Example />
+        <EEGLabSeriesProvider baseChunksURL="public/sub-s01/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg.chunks/">
+          <IntervalSelect />
+        </EEGLabSeriesProvider>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
-render(<Demo />, document.querySelector("#demo"));
+const demoElement = document.querySelector("#demo");
+if (demoElement) {
+  render(<Demo />, demoElement);
+}

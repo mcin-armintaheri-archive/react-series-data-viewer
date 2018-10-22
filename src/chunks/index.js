@@ -1,6 +1,7 @@
+// @flow
 import { FloatChunk } from "../../src/protocol-buffers/chunk_pb";
 
-export const fetchChunk = url => {
+export const fetchChunk = (url: string): Promise<FloatChunk> => {
   return fetch(url)
     .then(res => res.blob())
     .then(blob => {

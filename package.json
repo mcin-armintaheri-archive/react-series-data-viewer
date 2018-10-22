@@ -1,6 +1,6 @@
 {
   "name": "react-series-data-viewer",
-  "homepage": "",
+  "homepage": "https://armintaheri.github.io/react-series-data-viewer",
   "version": "1.0.0",
   "description": "react-series-data-viewer React component",
   "main": "lib/index.js",
@@ -21,40 +21,55 @@
     "test:watch": "nwb test-react --server",
     "protoc:python": "echo `pwd`; protoc --python_out='python/' protocol-buffers/chunk.proto",
     "protoc:js": "protoc --js_out=import_style=commonjs,binary:src/ protocol-buffers/chunk.proto",
-    "protoc:all": "npm run protoc:python; npm run protoc:js"
+    "protoc:all": "npm run protoc:python; npm run protoc:js",
+    "flow": "flow"
   },
   "dependencies": {
+    "d3-array": "^1.2.4",
+    "d3-dsv": "^1.0.10",
+    "d3-scale": "^2.1.2",
     "gl-matrix": "^2.8.1",
     "google-protobuf": "^3.6.1",
     "immutable": "^3.8.2",
+    "prop-types": "^15.6.2",
     "ramda": "^0.25.0",
     "react-redux": "^5.0.7",
+    "react-three": "^0.9.7",
     "recompose": "^0.30.0",
     "redux": "^4.0.0",
     "redux-actions": "^2.6.1",
     "redux-logger": "^3.0.6",
-    "redux-observable": "^1.0.0"
+    "redux-observable": "^1.0.0",
+    "resize-observer-polyfill": "^1.5.0",
+    "rxjs": "^6.3.3",
+    "three": "^0.97.0"
   },
   "peerDependencies": {
     "react": "16.x"
   },
   "devDependencies": {
+    "babel-eslint": "^9.0.0",
+    "babel-plugin-flow-react-proptypes": "^24.1.2",
+    "babel-plugin-module-resolver": "^3.1.1",
+    "eslint": "^5.7.0",
+    "eslint-config-prettier": "^2.9.0",
+    "eslint-config-react-app": "^3.0.4",
+    "eslint-import-resolver-babel-module": "^4.0.0",
+    "eslint-plugin-flowtype": "^2.50.3",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-prettier": "^2.6.0",
+    "eslint-plugin-react": "^7.11.1",
+    "flow-bin": "^0.78.0",
+    "gh-pages": "^1.2.0",
     "nwb": "0.23.x",
     "prettier": "^1.12.1",
-    "react": "^16.5.2",
-    "react-dom": "^16.5.2",
-    "babel-eslint": "^8.2.3",
-    "eslint": "^4.19.1",
-    "eslint-config-prettier": "^2.9.0",
-    "eslint-plugin-import": "^2.11.0",
-    "eslint-plugin-prettier": "^2.6.0",
-    "eslint-plugin-react": "^7.7.0",
-    "flow-bin": "^0.78.0",
-    "gh-pages": "^1.2.0"
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1"
   },
   "author": "",
   "license": "MIT",
-  "repository": "",
+  "repository": "https://github.com/ArminTaheri/react-series-data-viewer",
   "keywords": [
     "react-component"
   ]
