@@ -3,7 +3,11 @@
 import React, { Component } from "react";
 import { render } from "react-dom";
 
-import { EEGLabSeriesProvider, IntervalSelect } from "../../src";
+import {
+  EEGLabSeriesProvider,
+  SeriesRenderer,
+  IntervalSelect
+} from "../../src";
 import pkg from "../../package.json";
 
 const Demo = () => {
@@ -16,10 +20,17 @@ const Demo = () => {
           alt="Fork me on GitHub"
         />
       </a>
-      <div style={{ marginLeft: "150px" }}>
+      <div style={{ marginLeft: "100px" }}>
         <h1>react-series-data-viewer Demo</h1>
         <EEGLabSeriesProvider baseChunksURL="public/sub-s01/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg.chunks/">
-          <IntervalSelect />
+          <div>
+            <div style={{ height: "50px" }}>
+              <IntervalSelect />
+            </div>
+            <div style={{ height: "800px" }}>
+              <SeriesRenderer />
+            </div>
+          </div>
         </EEGLabSeriesProvider>
       </div>
     </div>
