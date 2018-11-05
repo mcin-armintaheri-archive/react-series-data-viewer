@@ -14,7 +14,7 @@ type Props = {
   opacity: number
 };
 
-const Rectangle = ({ start, end, color, opacity }: Props) => {
+const Rectangle = ({ start, end, color, opacity, ...rest }: Props) => {
   const d = vec2.create();
   vec2.sub(d, end, start);
   const p = vec2.create();
@@ -30,7 +30,7 @@ const Rectangle = ({ start, end, color, opacity }: Props) => {
   });
   return (
     <Object2D position={p}>
-      <Mesh geometry={geometry} material={material} />
+      <Mesh geometry={geometry} material={material} {...rest} />
     </Object2D>
   );
 };

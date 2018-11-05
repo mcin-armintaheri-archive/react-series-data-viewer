@@ -32,7 +32,12 @@ const ResponsiveViewer = ({
   return (
     <div ref={onRef} style={{ width: "100%", height: "100%" }}>
       <Renderer transparent width={width} height={height}>
-        <Scene width={width} height={height} camera={activeCamera}>
+        <Scene
+          pointerEvents={["onMouseDown", "onMouseMove", "onMouseUp"]}
+          width={width}
+          height={height}
+          camera={activeCamera}
+        >
           {provisioned}
         </Scene>
       </Renderer>

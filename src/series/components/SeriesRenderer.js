@@ -2,6 +2,7 @@
 
 import { vec2 } from "gl-matrix";
 import React from "react";
+import { connect } from "react-redux";
 import { scaleLinear } from "d3-scale";
 import { DEFUALT_VIEW_BOUNDS } from "src/vector";
 import ResponsiveViewer from "./ResponsiveViewer";
@@ -9,22 +10,27 @@ import DefaultOrthoCamera from "./DefaultOrthoCamera";
 import Object2D from "./Object2D";
 import Axis from "./Axis";
 import Rectangle from "./Rectangle";
-import type { Channel, Epoch } from "src/series/store/types";
-
-import { withProps } from "recompose";
+import LineChunk from "./LineChunk";
+import type { ChannelMetadata, Channel, Epoch } from "src/series/store/types";
 
 type Props = {
+  domain: [number, number],
   interval: [number, number],
   seriesRange: [number, number],
   channels: Channel[],
+  channelMetadata: ChannelMetadata[],
+  offsetIndex: number,
   hidden: number[],
   epochs: Epoch[]
 };
 
 const SeriesRenderer = ({
+  domain,
   interval,
   seriesRange,
   channels,
+  channelMetadata,
+  offsetIndex,
   hidden,
   epochs
 }: Props) => {
@@ -44,10 +50,6 @@ const SeriesRenderer = ({
   const center = vec2.create();
   vec2.add(center, topLeft, bottomRight);
   vec2.scale(center, center, 1 / 2);
-
-  const scale = scaleLinear()
-    .domain(interval)
-    .range(DEFUALT_VIEW_BOUNDS.x);
 
   const XAxisLayer = ({ interval }) => {
     const start0 = topLeft;
@@ -79,6 +81,9 @@ const SeriesRenderer = ({
     return (
       <Object2D position={center} layer={2}>
         {filtered.map((channel, i) => {
+          if (!channelMetadata[channel.index]) {
+            return null;
+          }
           const subTopLeft = vec2.create();
           vec2.add(
             subTopLeft,
@@ -86,9 +91,9 @@ const SeriesRenderer = ({
             vec2.fromValues(0, (i * diagonal[1]) / channels.length)
           );
 
-          const subBottomright = vec2.create();
+          const subBottomRight = vec2.create();
           vec2.add(
-            subBottomright,
+            subBottomRight,
             topLeft,
             vec2.fromValues(
               diagonal[0],
@@ -97,26 +102,59 @@ const SeriesRenderer = ({
           );
 
           const subDiagonal = vec2.create();
-          vec2.sub(subDiagonal, subBottomright, subTopLeft);
+          vec2.sub(subDiagonal, subBottomRight, subTopLeft);
 
           const axisEnd = vec2.create();
-          vec2.add(axisEnd, subTopLeft, vec2.fromValues(0.04, subDiagonal[1]));
+          vec2.add(axisEnd, subTopLeft, vec2.fromValues(0.1, subDiagonal[1]));
+
+          const scales = [
+            scaleLinear()
+              .domain(domain)
+              .range([subTopLeft[0], subBottomRight[0]]),
+            scaleLinear()
+              .domain(interval)
+              .range([subTopLeft[0], subBottomRight[0]]),
+            scaleLinear()
+              .domain(channelMetadata[channel.index].seriesRange)
+              .range([subTopLeft[1], subBottomRight[1]])
+          ];
 
           return (
             <Object2D key={`${i}-${channels.length}`} position={center}>
               <Axis
-                ticks={5}
-                domain={seriesRange}
+                ticks={8}
+                padding={2}
+                domain={channelMetadata[channel.index].seriesRange}
                 direction="left"
                 start={subTopLeft}
                 end={axisEnd}
               />
+              <Object2D layer={1}>
+                {channel.traces.map((trace, j) => {
+                  return (
+                    <Object2D key={`${j}-${channel.traces.length}`}>
+                      {trace.chunks.map((chunk, k) => {
+                        return (
+                          <LineChunk
+                            channelIndex={channel.index}
+                            traceIndex={j}
+                            key={`${k}-${trace.chunks.length}`}
+                            chunk={chunk}
+                            scales={scales}
+                          />
+                        );
+                      })}
+                    </Object2D>
+                  );
+                })}
+              </Object2D>
             </Object2D>
           );
         })}
       </Object2D>
     );
   };
+
   return channels.length > 0 ? (
     <ResponsiveViewer transparent activeCamera="maincamera">
       <DefaultOrthoCamera name="maincamera" />
@@ -132,28 +170,22 @@ const SeriesRenderer = ({
 };
 
 SeriesRenderer.defaultProps = {
+  domain: [0, 1],
   interval: [0.25, 0.75],
-  seriesRange: [0, 1],
+  seriesRange: [-1, 2],
   channels: [],
+  epochs: [],
   hidden: [],
-  epochs: []
+  channelMetadata: [],
+  offsetIndex: 0
 };
 
-const makeChunk = (interval, len) => ({
-  values: Array(len).fill(Math.random()),
-  interval
-});
-
-const makeTrace = () => ({
-  chunks: [makeChunk([0.25, 0.5], 1000), makeChunk([0.5, 0.75], 1000)],
-  type: "line"
-});
-
-const makeChannel = name => ({
-  name: `${name}`,
-  traces: [makeTrace(), makeTrace()]
-});
-
-export default withProps({
-  channels: [makeChannel(1), makeChannel(2), makeChannel(3)]
-})(SeriesRenderer);
+export default connect(state => ({
+  domain: state.bounds.domain,
+  interval: state.bounds.interval,
+  channels: state.dataset.channels,
+  epochs: state.dataset.epochs,
+  channelMetadata: state.dataset.channelMetadata,
+  seriesRange: state.dataset.seriesRange,
+  offsetIndex: state.dataset.offsetIndex
+}))(SeriesRenderer);

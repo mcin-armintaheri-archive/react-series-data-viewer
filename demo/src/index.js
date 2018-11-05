@@ -1,6 +1,6 @@
 // @flow
 
-import React, { Component } from "react";
+import React from "react";
 import { render } from "react-dom";
 
 import {
@@ -8,7 +8,13 @@ import {
   SeriesRenderer,
   IntervalSelect
 } from "../../src";
+
 import pkg from "../../package.json";
+
+const chunkDirectoryURLs = [
+  "/test-data/sub-s01/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg.chunks",
+  "https://s3.amazonaws.com/aces-vis-demo-data/public/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg.chunks"
+];
 
 const Demo = () => {
   return (
@@ -20,9 +26,8 @@ const Demo = () => {
           alt="Fork me on GitHub"
         />
       </a>
-      <div style={{ marginLeft: "100px" }}>
-        <h1>react-series-data-viewer Demo</h1>
-        <EEGLabSeriesProvider baseChunksURL="public/sub-s01/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg.chunks/">
+      <div style={{ marginLeft: "150px" }}>
+        <EEGLabSeriesProvider chunkDirectoryURLs={chunkDirectoryURLs}>
           <div>
             <div style={{ height: "50px" }}>
               <IntervalSelect />

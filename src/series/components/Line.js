@@ -1,20 +1,49 @@
 // @flow
 
+import * as R from "ramda";
 import React from "react";
 import { Line as THREELine } from "react-three";
 import * as THREE from "three";
 import type { Vector2 } from "src/vector";
+import Object2D from "./Object2D";
+
+const lineGeometry = ({ points }) => {
+  const geometry = new THREE.Geometry();
+  geometry.vertices = points.map(p => new THREE.Vector3(p[0], p[1], 0));
+  return geometry;
+};
+
+const lineGeometryMemo = R.memoizeWith(
+  ({ cacheKey }) => cacheKey,
+  lineGeometry
+);
+
+const lineMaterial = ({ linewidth, color }) => {
+  const material = new THREE.LineBasicMaterial({ color, linewidth });
+  return material;
+};
+
+const lineMaterialMemo = R.memoizeWith(
+  ({ cacheKey }) => cacheKey,
+  lineMaterial
+);
 
 type Props = {
+  cacheKey?: any,
   points: Vector2[],
   linewidth: number,
   color: THREE.Color
 };
 
-const Line = ({ points, linewidth, color }: Props) => {
-  const geometry = new THREE.Geometry();
-  geometry.vertices = points.map(p => new THREE.Vector3(p[0], p[1], 0));
-  const material = new THREE.LineBasicMaterial({ color, linewidth });
+const Line = ({ cacheKey, points, linewidth, color }: Props) => {
+  const geometry = cacheKey
+    ? lineGeometryMemo({ cacheKey, points })
+    : lineGeometry({ points });
+
+  const material = cacheKey
+    ? lineMaterialMemo({ cacheKey, linewidth, color })
+    : lineMaterial({ linewidth, color });
+
   return <THREELine geometry={geometry} material={material} />;
 };
 

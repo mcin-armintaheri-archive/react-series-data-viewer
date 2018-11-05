@@ -1,4 +1,6 @@
 // @flow
+
+// $FlowFixMe
 import { vec2, glMatrix } from "gl-matrix";
 
 export type Vector2 = glMatrix.ARRAY_TYPE;
@@ -10,3 +12,7 @@ export const DEFUALT_VIEW_BOUNDS = {
   x: [-1.0, 1.0],
   y: [-1.0, 1.0]
 };
+
+export const MIN_INTERVAL_FACTOR = 0.005;
+
+export const MAX_VIEWED_CHUNKS = 10;

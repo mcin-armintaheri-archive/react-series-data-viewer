@@ -16,5 +16,13 @@ module.exports = {
       "flow-react-proptypes",
       ["module-resolver", { alias: { src: path.resolve("src") } }]
     ]
+  },
+  devServer: {
+    proxy: {
+      "/test-data": {
+        target: "http://localhost:5000",
+        pathRewrite: { "^/test-data": "" }
+      }
+    }
   }
 };

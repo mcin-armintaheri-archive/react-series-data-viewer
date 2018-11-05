@@ -1,8 +1,11 @@
 // @flow
 
 export type Chunk = {
+  index: number,
   values: number[],
-  interval: [number, number]
+  downsampling: number,
+  interval: [number, number],
+  cutoff: number
 };
 
 export type Trace = {
@@ -10,8 +13,13 @@ export type Trace = {
   type: "line"
 };
 
-export type Channel = {
+export type ChannelMetadata = {
   name: string,
+  seriesRange: [number, number]
+};
+
+export type Channel = {
+  index: number,
   traces: Trace[]
 };
 

@@ -9,7 +9,13 @@ export const fetchChunk = (url: string): Promise<FloatChunk> => {
       reader.readAsArrayBuffer(blob);
       return new Promise(resolve => {
         reader.addEventListener("loadend", () => {
-          resolve(FloatChunk.deserializeBinary(reader.result));
+          const parsed = FloatChunk.deserializeBinary(reader.result);
+          resolve({
+            index: parsed.getIndex(),
+            cutoff: parsed.getCutoff(),
+            downsampling: parsed.getDownsampling(),
+            values: parsed.getSamplesList()
+          });
         });
       });
     });

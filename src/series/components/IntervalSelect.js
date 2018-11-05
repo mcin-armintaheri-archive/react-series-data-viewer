@@ -1,10 +1,17 @@
 // @flow
 
+import * as R from "ramda";
 import { vec2 } from "gl-matrix";
 import React from "react";
+import { connect } from "react-redux";
 import * as THREE from "three";
 import { scaleLinear } from "d3-scale";
 import { DEFUALT_VIEW_BOUNDS } from "src/vector";
+import {
+  startDragInterval,
+  continueDragInterval,
+  endDragInterval
+} from "../store/logic/drag-bounds";
 import ResponsiveViewer from "./ResponsiveViewer";
 import DefaultOrthoCamera from "./DefaultOrthoCamera";
 import Object2D from "./Object2D";
@@ -13,10 +20,19 @@ import Rectangle from "./Rectangle";
 
 type Props = {
   domain: [number, number],
-  interval: [number, number]
+  interval: [number, number],
+  dragStart: number => void,
+  dragContinue: number => void,
+  dragEnd: number => void
 };
 
-const IntervalSelect = ({ domain, interval }: Props) => {
+const IntervalSelect = ({
+  domain,
+  interval,
+  dragStart,
+  dragContinue,
+  dragEnd
+}: Props) => {
   const topLeft = vec2.fromValues(
     DEFUALT_VIEW_BOUNDS.x[0],
     DEFUALT_VIEW_BOUNDS.y[1]
@@ -61,9 +77,27 @@ const IntervalSelect = ({ domain, interval }: Props) => {
       />
     </Object2D>
   );
+  const eventToInterval = (_, intersection) =>
+    scale.invert(intersection && intersection.point.x);
   const InteractionLayer = () => (
     <Object2D position={center} layer={0}>
-      <Rectangle start={topLeft} end={bottomRight} opacity={0} />
+      <Rectangle
+        start={topLeft}
+        end={bottomRight}
+        opacity={0}
+        onMouseDown3D={R.compose(
+          dragStart,
+          eventToInterval
+        )}
+        onMouseMove3D={R.compose(
+          dragContinue,
+          eventToInterval
+        )}
+        onMouseUp3D={R.compose(
+          dragEnd,
+          eventToInterval
+        )}
+      />
     </Object2D>
   );
   return (
@@ -71,14 +105,33 @@ const IntervalSelect = ({ domain, interval }: Props) => {
       <DefaultOrthoCamera name="maincamera" />
       <BackShadowLayer interval={interval} />
       <AxisLayer domain={domain} />
-      <InteractionLayer />
+      <InteractionLayer start={topLeft} end={bottomRight} />
     </ResponsiveViewer>
   );
 };
 
 IntervalSelect.defaultProps = {
   domain: [0, 1],
-  interval: [0.1, 0.9]
+  interval: [0.25, 0.75]
 };
 
-export default IntervalSelect;
+export default connect(
+  state => ({
+    domain: state.bounds.domain,
+    interval: state.bounds.interval
+  }),
+  (dispatch: any => void) => ({
+    dragStart: R.compose(
+      dispatch,
+      startDragInterval
+    ),
+    dragContinue: R.compose(
+      dispatch,
+      continueDragInterval
+    ),
+    dragEnd: R.compose(
+      dispatch,
+      endDragInterval
+    )
+  })
+)(IntervalSelect);

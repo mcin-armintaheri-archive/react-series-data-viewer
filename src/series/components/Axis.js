@@ -183,7 +183,7 @@ Axis.defaultProps = {
   direction: "bottom",
   domain: [0, 1],
   ticks: 10,
-  padding: 1,
+  padding: 0,
   format: tick => `${tick}`
 };
 

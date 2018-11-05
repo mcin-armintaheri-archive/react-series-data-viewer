@@ -35,7 +35,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.FloatChunk.repeatedFields_ = [3];
+proto.FloatChunk.repeatedFields_ = [4];
 
 
 
@@ -66,9 +66,10 @@ proto.FloatChunk.prototype.toObject = function(opt_includeInstance) {
  */
 proto.FloatChunk.toObject = function(includeInstance, msg) {
   var f, obj = {
-    index: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    downsampling: jspb.Message.getFieldWithDefault(msg, 1, 0),
-    samplesList: jspb.Message.getRepeatedFloatingPointField(msg, 3)
+    index: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    downsampling: jspb.Message.getFieldWithDefault(msg, 2, 0),
+    cutoff: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    samplesList: jspb.Message.getRepeatedFloatingPointField(msg, 4)
   };
 
   if (includeInstance) {
@@ -105,15 +106,19 @@ proto.FloatChunk.deserializeBinaryFromReader = function(msg, reader) {
     }
     var field = reader.getFieldNumber();
     switch (field) {
-    case 2:
-      var value = /** @type {number} */ (reader.readInt32());
+    case 1:
+      var value = /** @type {number} */ (reader.readInt64());
       msg.setIndex(value);
       break;
-    case 1:
-      var value = /** @type {number} */ (reader.readInt32());
+    case 2:
+      var value = /** @type {number} */ (reader.readInt64());
       msg.setDownsampling(value);
       break;
     case 3:
+      var value = /** @type {number} */ (reader.readInt64());
+      msg.setCutoff(value);
+      break;
+    case 4:
       var value = /** @type {!Array<number>} */ (reader.readPackedFloat());
       msg.setSamplesList(value);
       break;
@@ -148,22 +153,29 @@ proto.FloatChunk.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getIndex();
   if (f !== 0) {
-    writer.writeInt32(
-      2,
+    writer.writeInt64(
+      1,
       f
     );
   }
   f = message.getDownsampling();
   if (f !== 0) {
-    writer.writeInt32(
-      1,
+    writer.writeInt64(
+      2,
+      f
+    );
+  }
+  f = message.getCutoff();
+  if (f !== 0) {
+    writer.writeInt64(
+      3,
       f
     );
   }
   f = message.getSamplesList();
   if (f.length > 0) {
     writer.writePackedFloat(
-      3,
+      4,
       f
     );
   }
@@ -171,47 +183,62 @@ proto.FloatChunk.serializeBinaryToWriter = function(message, writer) {
 
 
 /**
- * optional int32 index = 2;
+ * optional int64 index = 1;
  * @return {number}
  */
 proto.FloatChunk.prototype.getIndex = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
-};
-
-
-/** @param {number} value */
-proto.FloatChunk.prototype.setIndex = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
-};
-
-
-/**
- * optional int32 downsampling = 1;
- * @return {number}
- */
-proto.FloatChunk.prototype.getDownsampling = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
 };
 
 
 /** @param {number} value */
-proto.FloatChunk.prototype.setDownsampling = function(value) {
+proto.FloatChunk.prototype.setIndex = function(value) {
   jspb.Message.setProto3IntField(this, 1, value);
 };
 
 
 /**
- * repeated float samples = 3;
+ * optional int64 downsampling = 2;
+ * @return {number}
+ */
+proto.FloatChunk.prototype.getDownsampling = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/** @param {number} value */
+proto.FloatChunk.prototype.setDownsampling = function(value) {
+  jspb.Message.setProto3IntField(this, 2, value);
+};
+
+
+/**
+ * optional int64 cutoff = 3;
+ * @return {number}
+ */
+proto.FloatChunk.prototype.getCutoff = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/** @param {number} value */
+proto.FloatChunk.prototype.setCutoff = function(value) {
+  jspb.Message.setProto3IntField(this, 3, value);
+};
+
+
+/**
+ * repeated float samples = 4;
  * @return {!Array<number>}
  */
 proto.FloatChunk.prototype.getSamplesList = function() {
-  return /** @type {!Array<number>} */ (jspb.Message.getRepeatedFloatingPointField(this, 3));
+  return /** @type {!Array<number>} */ (jspb.Message.getRepeatedFloatingPointField(this, 4));
 };
 
 
 /** @param {!Array<number>} value */
 proto.FloatChunk.prototype.setSamplesList = function(value) {
-  jspb.Message.setField(this, 3, value || []);
+  jspb.Message.setField(this, 4, value || []);
 };
 
 
@@ -220,7 +247,7 @@ proto.FloatChunk.prototype.setSamplesList = function(value) {
  * @param {number=} opt_index
  */
 proto.FloatChunk.prototype.addSamples = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 3, value, opt_index);
+  jspb.Message.addToRepeatedField(this, 4, value, opt_index);
 };
 
 
