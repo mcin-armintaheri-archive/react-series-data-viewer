@@ -16,6 +16,11 @@ const chunkDirectoryURLs = [
   "https://s3.amazonaws.com/aces-vis-demo-data/public/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg.chunks"
 ];
 
+const epochsTableURLs = [
+  "/test-data/sub-s01/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg_events.tsv",
+  "https://s3.amazonaws.com/aces-vis-demo-data/public/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg_events.tsv"
+];
+
 const Demo = () => {
   return (
     <div>
@@ -26,8 +31,11 @@ const Demo = () => {
           alt="Fork me on GitHub"
         />
       </a>
-      <div style={{ marginLeft: "150px" }}>
-        <EEGLabSeriesProvider chunkDirectoryURLs={chunkDirectoryURLs}>
+      <div style={{ marginLeft: "150px", marginRight: "10px" }}>
+        <EEGLabSeriesProvider
+          chunkDirectoryURLs={chunkDirectoryURLs}
+          epochsTableURLs={epochsTableURLs}
+        >
           <div>
             <div style={{ height: "50px" }}>
               <IntervalSelect />

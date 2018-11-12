@@ -102,7 +102,7 @@ export const createFetchChunksEpic = (fromState: any => State) => (
               return fetchChunkAt(
                 chunkDirectoryURL,
                 max.downsampling,
-                i,
+                channel.index,
                 j,
                 chunkIndex
               ).then(chunk => ({
@@ -120,7 +120,7 @@ export const createFetchChunksEpic = (fromState: any => State) => (
 
             return from(
               Promise.all(chunkPromises).then(chunks => ({
-                channelIndex: i,
+                channelIndex: channel.index,
                 traceIndex: j,
                 chunks
               }))

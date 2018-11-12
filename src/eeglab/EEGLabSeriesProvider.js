@@ -1,5 +1,6 @@
 // @flow
 
+import { tsvParse } from "d3-dsv";
 import React, { Component } from "react";
 import type { Node } from "react";
 import { createStore, applyMiddleware } from "redux";
@@ -10,14 +11,16 @@ import fetchAjax from "src/ajax";
 import { rootReducer, rootEpic } from "src/series/store";
 import {
   setChannels,
+  setEpochs,
   setDatasetMetadata,
   emptyChannels
 } from "src/series/store/state/dataset";
 import { setDomain, setInterval } from "src/series/store/state/bounds";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 type Props = {
   // electrodesTableURL: string,
-  // epochsTableURL: string,
+  epochsTableURLs: string | string[],
   chunkDirectoryURLs: string | string[],
   limit: number,
   children?: Node
@@ -42,24 +45,25 @@ export default class extends Component<Props> {
 
     window.EEGLabSeriesProviderStore = this.store;
 
-    const { chunkDirectoryURLs } = props;
+    const { chunkDirectoryURLs, epochsTableURLs, limit } = props;
 
-    const urls =
+    const chunkUrls =
       chunkDirectoryURLs instanceof Array
         ? chunkDirectoryURLs
         : [chunkDirectoryURLs];
 
-    const racers = urls.map(url =>
-      fetchAjax(`${url}/index.json`)
-        .then(res => ({ res, url }))
-        // if request fails don't resolve
-        .catch(error => {
-          console.error(error);
-          return new Promise(resolve => {});
-        })
-    );
+    const racers = (urls, route = "") =>
+      urls.map(url =>
+        fetchAjax(`${url}${route}`)
+          .then(res => ({ res, url }))
+          // if request fails don't resolve
+          .catch(error => {
+            console.error(error);
+            return new Promise(resolve => {});
+          })
+      );
 
-    Promise.race(racers)
+    Promise.race(racers(chunkUrls, "/index.json"))
       .then(({ res, url }) => res.json().then(json => ({ json, url })))
       .then(({ json, url }) => {
         const { channelMetadata, shapes, timeInterval, seriesRange } = json;
@@ -69,12 +73,31 @@ export default class extends Component<Props> {
             channelMetadata,
             shapes,
             timeInterval,
-            seriesRange
+            seriesRange,
+            limit
           })
         );
         this.store.dispatch(setChannels(emptyChannels(this.props.limit, 1)));
         this.store.dispatch(setDomain(timeInterval));
         this.store.dispatch(setInterval(timeInterval));
+      });
+
+    const epochUrls =
+      epochsTableURLs instanceof Array ? epochsTableURLs : [epochsTableURLs];
+
+    Promise.race(racers(epochUrls))
+      .then(({ res }) => res.text())
+      .then(text => {
+        this.store.dispatch(
+          setEpochs(
+            tsvParse(text).map(({ onset, duration, trial_type }) => ({
+              onset: parseFloat(onset),
+              duration: parseFloat(duration),
+              type: trial_type,
+              channels: "all"
+            }))
+          )
+        );
       });
   }
   render() {

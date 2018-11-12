@@ -15,4 +15,8 @@ export const DEFUALT_VIEW_BOUNDS = {
 
 export const MIN_INTERVAL_FACTOR = 0.005;
 
-export const MAX_VIEWED_CHUNKS = 10;
+export const MIN_EPOCH_WIDTH = 1 / 200;
+
+export const MAX_VIEWED_CHUNKS = 3;
+
+export const MAX_RENDERED_EPOCHS = 100;

@@ -24,7 +24,8 @@ export type Channel = {
 };
 
 export type Epoch = {
+  onset: number,
+  duration: number,
   type: string,
-  domain: [number, number],
   channels: number[] | "all"
 };

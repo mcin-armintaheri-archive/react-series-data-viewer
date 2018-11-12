@@ -1,6 +1,7 @@
 // @flow
 
 import * as R from "ramda";
+import { scaleLinear } from "d3-scale";
 import { vec2 } from "gl-matrix";
 import React from "react";
 import * as THREE from "three";
@@ -9,27 +10,40 @@ import Object2D from "./Object2D";
 import Line from "./Line";
 
 const LineMemo = R.memoizeWith(
-  ({ interval, traceIndex, channelIndex }) =>
-    `${interval[0]},${interval[1]}-${traceIndex}-${channelIndex}`,
-  ({ interval, traceIndex, channelIndex, p0, values, scales, ...rest }) => {
-    const scInterval = interval.map(scales[0]);
+  ({ interval, channelIndex, traceIndex, chunkIndex }) =>
+    `${interval[0]},${interval[1]}-${channelIndex}-${traceIndex}-${chunkIndex}`,
+  ({
+    channelIndex,
+    traceIndex,
+    chunkIndex,
+    interval,
+    seriesRange,
+    values,
+    ...rest
+  }) => {
+    const scales = [
+      scaleLinear()
+        .domain(interval)
+        .range([-0.5, 0.5]),
+      scaleLinear()
+        .domain(seriesRange)
+        .range([-0.5, 0.5])
+    ];
 
-    const absPoints = values.map((value, i) =>
+    const points = values.map((value, i) =>
       vec2.fromValues(
-        scInterval[0] + (i / values.length) * (scInterval[1] - scInterval[0]),
-        scales[2](value)
+        scales[0](
+          interval[0] + (i / values.length) * (interval[1] - interval[0])
+        ),
+        scales[1](value)
       )
     );
 
-    const points = absPoints.map(p => {
-      const diff = vec2.create();
-      vec2.sub(diff, p, p0);
-      return diff;
-    });
-
     return (
       <Line
-        cacheKey={`${interval[0]},${interval[1]}-${traceIndex}-${channelIndex}`}
+        cacheKey={`${interval[0]},${
+          interval[1]
+        }-${channelIndex}-${traceIndex}-${chunkIndex}`}
         points={points}
         {...rest}
       />
@@ -40,7 +54,9 @@ const LineMemo = R.memoizeWith(
 type Props = {
   channelIndex: number,
   traceIndex: number,
+  chunkIndex: number,
   chunk: Chunk,
+  seriesRange: [number, number],
   scales: [any, any, any],
   color?: THREE.Color
 };
@@ -48,7 +64,9 @@ type Props = {
 const LineChunk = ({
   channelIndex,
   traceIndex,
+  chunkIndex,
   chunk,
+  seriesRange,
   scales,
   color,
   ...rest
@@ -61,37 +79,28 @@ const LineChunk = ({
 
   const range = scales[2].range();
 
-  const chunkLength0 = Math.abs(
-    scales[0](interval[1]) - scales[0](interval[0])
-  );
-  const chunkLength1 = Math.abs(
-    scales[1](interval[1]) - scales[1](interval[0])
-  );
+  const chunkLength = Math.abs(scales[1](interval[1]) - scales[1](interval[0]));
+  const chunkHeight = Math.abs(range[1] - range[0]);
 
-  const p0Global = vec2.fromValues(
-    scales[0](interval[0]),
-    -Math.abs(range[1] - range[0]) / 2
-  );
-
-  const p0Local = vec2.fromValues(
-    scales[1](interval[0]),
-    -Math.abs(range[1] - range[0]) / 2
+  const p0 = vec2.fromValues(
+    (scales[1](interval[0]) + scales[1](interval[1])) / 2,
+    (range[0] + range[1]) / 2
   );
 
   const lineColor = color || new THREE.Color("#000");
 
   return (
     <Object2D
-      position={p0Local}
-      scale={new THREE.Vector3(chunkLength1 / chunkLength0, 1, 1)}
+      position={p0}
+      scale={new THREE.Vector3(chunkLength, chunkHeight, 1)}
     >
       <LineMemo
-        p0={p0Global}
         channelIndex={channelIndex}
         traceIndex={traceIndex}
-        interval={interval}
+        chunkIndex={chunkIndex}
         values={values}
-        scales={scales}
+        interval={interval}
+        seriesRange={seriesRange}
         color={lineColor}
         {...rest}
       />

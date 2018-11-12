@@ -5,7 +5,6 @@ import React from "react";
 import { Line as THREELine } from "react-three";
 import * as THREE from "three";
 import type { Vector2 } from "src/vector";
-import Object2D from "./Object2D";
 
 const lineGeometry = ({ points }) => {
   const geometry = new THREE.Geometry();

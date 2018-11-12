@@ -1,17 +1,25 @@
 // @flow
 
+import * as R from "ramda";
 import { vec2 } from "gl-matrix";
 import React from "react";
+import { Container, Row, Col, Input, ButtonGroup, Button } from "reactstrap";
 import { connect } from "react-redux";
 import { scaleLinear } from "d3-scale";
-import { DEFUALT_VIEW_BOUNDS } from "src/vector";
+import { DEFUALT_VIEW_BOUNDS, MAX_RENDERED_EPOCHS } from "src/vector";
 import ResponsiveViewer from "./ResponsiveViewer";
 import DefaultOrthoCamera from "./DefaultOrthoCamera";
 import Object2D from "./Object2D";
 import Axis from "./Axis";
 import Rectangle from "./Rectangle";
 import LineChunk from "./LineChunk";
-import type { ChannelMetadata, Channel, Epoch } from "src/series/store/types";
+import Epoch from "./Epoch";
+import { setOffsetIndex } from "src/series/store/logic/pagination";
+import type {
+  ChannelMetadata,
+  Channel,
+  Epoch as EpochType
+} from "src/series/store/types";
 
 type Props = {
   domain: [number, number],
@@ -19,9 +27,11 @@ type Props = {
   seriesRange: [number, number],
   channels: Channel[],
   channelMetadata: ChannelMetadata[],
-  offsetIndex: number,
   hidden: number[],
-  epochs: Epoch[]
+  epochs: EpochType[],
+  offsetIndex: number,
+  setOffsetIndex: number => void,
+  limit: number
 };
 
 const SeriesRenderer = ({
@@ -30,9 +40,11 @@ const SeriesRenderer = ({
   seriesRange,
   channels,
   channelMetadata,
-  offsetIndex,
   hidden,
-  epochs
+  epochs,
+  offsetIndex,
+  setOffsetIndex,
+  limit
 }: Props) => {
   const topLeft = vec2.fromValues(
     DEFUALT_VIEW_BOUNDS.x[0],
@@ -50,6 +62,14 @@ const SeriesRenderer = ({
   const center = vec2.create();
   vec2.add(center, topLeft, bottomRight);
   vec2.scale(center, center, 1 / 2);
+
+  const filteredChannels = channels.filter((_, i) => !hidden.includes(i));
+
+  const InteractionLayer = () => (
+    <Object2D position={center} layer={0}>
+      <Rectangle start={topLeft} end={bottomRight} opacity={0} />
+    </Object2D>
+  );
 
   const XAxisLayer = ({ interval }) => {
     const start0 = topLeft;
@@ -70,17 +90,41 @@ const SeriesRenderer = ({
     );
   };
 
-  const InteractionLayer = () => (
-    <Object2D position={center} layer={0}>
-      <Rectangle start={topLeft} end={bottomRight} opacity={0} />
-    </Object2D>
-  );
-
-  const ChannelsLayer = () => {
-    const filtered = channels.filter((_, i) => !hidden.includes(i));
+  const EpochsLayer = () => {
+    const filteredEpochs = epochs.filter(
+      epoch =>
+        epoch.onset + epoch.duration > interval[0] && epoch.onset < interval[1]
+    );
     return (
       <Object2D position={center} layer={2}>
-        {filtered.map((channel, i) => {
+        {filteredEpochs.length < MAX_RENDERED_EPOCHS &&
+          filteredEpochs.map((epoch, i) => {
+            const scales = [
+              scaleLinear()
+                .domain(interval)
+                .range([topLeft[0], bottomRight[0]]),
+              scaleLinear()
+                .domain(DEFUALT_VIEW_BOUNDS.y)
+                .range([topLeft[1], bottomRight[1]])
+            ];
+
+            return (
+              <Epoch
+                key={`${i}-${epochs.length}`}
+                {...epoch}
+                scales={scales}
+                opacity={0.3}
+              />
+            );
+          })}
+      </Object2D>
+    );
+  };
+
+  const ChannelsLayer = () => {
+    return (
+      <Object2D position={center} layer={3}>
+        {filteredChannels.map((channel, i) => {
           if (!channelMetadata[channel.index]) {
             return null;
           }
@@ -118,13 +162,16 @@ const SeriesRenderer = ({
               .domain(channelMetadata[channel.index].seriesRange)
               .range([subTopLeft[1], subBottomRight[1]])
           ];
-
+          const seriesRange = channelMetadata[channel.index].seriesRange;
           return (
-            <Object2D key={`${i}-${channels.length}`} position={center}>
+            <Object2D
+              key={`${channel.index}-${channels.length}`}
+              position={center}
+            >
               <Axis
                 ticks={8}
                 padding={2}
-                domain={channelMetadata[channel.index].seriesRange}
+                domain={seriesRange}
                 direction="left"
                 start={subTopLeft}
                 end={axisEnd}
@@ -138,8 +185,10 @@ const SeriesRenderer = ({
                           <LineChunk
                             channelIndex={channel.index}
                             traceIndex={j}
+                            chunkIndex={k}
                             key={`${k}-${trace.chunks.length}`}
                             chunk={chunk}
+                            seriesRange={seriesRange}
                             scales={scales}
                           />
                         );
@@ -156,12 +205,75 @@ const SeriesRenderer = ({
   };
 
   return channels.length > 0 ? (
-    <ResponsiveViewer transparent activeCamera="maincamera">
-      <DefaultOrthoCamera name="maincamera" />
-      <XAxisLayer interval={interval} />
-      <ChannelsLayer />
-      <InteractionLayer />
-    </ResponsiveViewer>
+    <Container fluid style={{ height: "100%" }}>
+      <Row style={{ height: "100%" }}>
+        <Col xs={12}>
+          <Row>
+            <Col xs={2} />
+            <Col xs={10}>
+              <Row>
+                <Col xs={3}>
+                  <ButtonGroup>
+                    <Button onClick={() => setOffsetIndex(offsetIndex - limit)}>
+                      &lt;&lt;
+                    </Button>
+                    <Button onClick={() => setOffsetIndex(offsetIndex - 1)}>
+                      &lt;
+                    </Button>
+                    <Button onClick={() => setOffsetIndex(offsetIndex + 1)}>
+                      &gt;
+                    </Button>
+                    <Button onClick={() => setOffsetIndex(offsetIndex + limit)}>
+                      &gt;&gt;
+                    </Button>
+                  </ButtonGroup>
+                </Col>
+                <Col xs={9}>
+                  Showing{" "}
+                  <div style={{ display: "inline-block", width: "80px" }}>
+                    <Input
+                      type="number"
+                      value={offsetIndex}
+                      onChange={e => setOffsetIndex(e.target.value)}
+                    />
+                  </div>{" "}
+                  to {offsetIndex + limit} of {channelMetadata.length}
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+          <Row style={{ height: "100%" }}>
+            <Col
+              xs={2}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between"
+              }}
+            >
+              {filteredChannels.map(channel => (
+                <div
+                  key={channel.index}
+                  style={{ display: "flex", margin: "auto" }}
+                >
+                  {channelMetadata[channel.index] &&
+                    channelMetadata[channel.index].name}
+                </div>
+              ))}
+            </Col>
+            <Col xs={10}>
+              <ResponsiveViewer transparent activeCamera="maincamera">
+                <DefaultOrthoCamera name="maincamera" />
+                <InteractionLayer />
+                <XAxisLayer interval={interval} />
+                <EpochsLayer />
+                <ChannelsLayer />
+              </ResponsiveViewer>
+            </Col>
+          </Row>
+        </Col>
+      </Row>
+    </Container>
   ) : (
     <div style={{ width: "100%", height: "100%" }}>
       <h4>Nothing To Display</h4>
@@ -177,15 +289,24 @@ SeriesRenderer.defaultProps = {
   epochs: [],
   hidden: [],
   channelMetadata: [],
-  offsetIndex: 0
+  offsetIndex: 0,
+  limit: 6
 };
 
-export default connect(state => ({
-  domain: state.bounds.domain,
-  interval: state.bounds.interval,
-  channels: state.dataset.channels,
-  epochs: state.dataset.epochs,
-  channelMetadata: state.dataset.channelMetadata,
-  seriesRange: state.dataset.seriesRange,
-  offsetIndex: state.dataset.offsetIndex
-}))(SeriesRenderer);
+export default connect(
+  state => ({
+    domain: state.bounds.domain,
+    interval: state.bounds.interval,
+    channels: state.dataset.channels,
+    epochs: state.dataset.epochs,
+    channelMetadata: state.dataset.channelMetadata,
+    seriesRange: state.dataset.seriesRange,
+    offsetIndex: state.dataset.offsetIndex
+  }),
+  (dispatch: any => void) => ({
+    setOffsetIndex: R.compose(
+      dispatch,
+      setOffsetIndex
+    )
+  })
+)(SeriesRenderer);

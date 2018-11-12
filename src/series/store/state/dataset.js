@@ -10,7 +10,7 @@ export const SET_CHANNELS = "SET_CHANNELS";
 export const setChannels = createAction(SET_CHANNELS);
 
 export const SET_EPOCHS = "SET_EPOCHS";
-export const setEpocs = createAction(SET_EPOCHS);
+export const setEpochs = createAction(SET_EPOCHS);
 
 export const SET_ACTIVE_CHANNEL = "SET_ACTIVE_CHANNEL";
 export const setActiveChannel = createAction(SET_ACTIVE_CHANNEL);
@@ -40,7 +40,7 @@ export type State = {
   activeChannel: number | null,
   channelMetadata: ChannelMetadata[],
   channels: Channel[],
-  offset: number,
+  offsetIndex: number,
   limit: number,
   epochs: Epoch[],
   shapes: number[][],
@@ -54,7 +54,7 @@ export const datasetReducer = (
     channelMetadata: [],
     channels: [],
     epochs: [],
-    offset: 0,
+    offsetIndex: 0,
     limit: 6,
     shapes: [],
     timeInterval: [0, 1],
@@ -79,17 +79,18 @@ export const datasetReducer = (
       return R.merge(state, action.payload);
     }
     default: {
-      return state.activeChannel !== null
-        ? R.assocPath(
-            // $FlowFixMe TODO: ramda types don't allow for number as index
-            ["channels", state.activeChannel],
-            channelReducer(
-              state.channels[state.activeChannel || 0],
-              (action: any)
-            ),
-            state
-          )
-        : state;
+      const activeIndex = state.channels.findIndex(
+        c => c.index === state.activeChannel
+      );
+      if (activeIndex < 0) {
+        return state;
+      }
+      return R.assocPath(
+        // $FlowFixMe TODO: ramda types don't allow for number as index
+        ["channels", activeIndex],
+        channelReducer(state.channels[activeIndex], (action: any)),
+        state
+      );
     }
   }
 };

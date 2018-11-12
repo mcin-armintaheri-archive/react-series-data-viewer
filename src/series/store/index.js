@@ -7,6 +7,7 @@ import { boundsReducer } from "./state/bounds";
 import { datasetReducer } from "./state/dataset";
 import { createDragBoundsEpic } from "./logic/drag-bounds";
 import { createFetchChunksEpic } from "./logic/fetch-chunks";
+import { createPaginationEpic } from "./logic/pagination";
 
 export const rootReducer = combineReducers({
   bounds: boundsReducer,
@@ -18,5 +19,9 @@ export const rootEpic = combineEpics(
   createFetchChunksEpic(({ bounds, dataset }) => ({
     bounds,
     dataset
-  }))
+  })),
+  createPaginationEpic(({ dataset }) => {
+    const { limit, channelMetadata, channels } = dataset;
+    return { limit, channelMetadata, channels };
+  })
 );
