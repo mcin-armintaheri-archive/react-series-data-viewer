@@ -14,6 +14,8 @@ import Axis from "./Axis";
 import Rectangle from "./Rectangle";
 import LineChunk from "./LineChunk";
 import Epoch from "./Epoch";
+import SeriesCursor from "./SeriesCursor";
+import { setCursor } from "src/series/store/state/cursor";
 import { setOffsetIndex } from "src/series/store/logic/pagination";
 import type {
   ChannelMetadata,
@@ -25,6 +27,8 @@ type Props = {
   domain: [number, number],
   interval: [number, number],
   seriesRange: [number, number],
+  cursor: ?number,
+  setCursor: (?number) => void,
   channels: Channel[],
   channelMetadata: ChannelMetadata[],
   hidden: number[],
@@ -38,6 +42,8 @@ const SeriesRenderer = ({
   domain,
   interval,
   seriesRange,
+  cursor,
+  setCursor,
   channels,
   channelMetadata,
   hidden,
@@ -63,11 +69,31 @@ const SeriesRenderer = ({
   vec2.add(center, topLeft, bottomRight);
   vec2.scale(center, center, 1 / 2);
 
+  const scales = [
+    scaleLinear()
+      .domain(interval)
+      .range([topLeft[0], bottomRight[0]]),
+    scaleLinear()
+      .domain(DEFUALT_VIEW_BOUNDS.y)
+      .range([topLeft[1], bottomRight[1]])
+  ];
+
   const filteredChannels = channels.filter((_, i) => !hidden.includes(i));
+
+  const eventToInterval = (_, intersection) =>
+    scales[0].invert(intersection && intersection.point.x);
 
   const InteractionLayer = () => (
     <Object2D position={center} layer={0}>
-      <Rectangle start={topLeft} end={bottomRight} opacity={0} />
+      <Rectangle
+        start={topLeft}
+        end={bottomRight}
+        opacity={0}
+        onMouseMove3D={R.compose(
+          setCursor,
+          eventToInterval
+        )}
+      />
     </Object2D>
   );
 
@@ -99,15 +125,6 @@ const SeriesRenderer = ({
       <Object2D position={center} layer={2}>
         {filteredEpochs.length < MAX_RENDERED_EPOCHS &&
           filteredEpochs.map((epoch, i) => {
-            const scales = [
-              scaleLinear()
-                .domain(interval)
-                .range([topLeft[0], bottomRight[0]]),
-              scaleLinear()
-                .domain(DEFUALT_VIEW_BOUNDS.y)
-                .range([topLeft[1], bottomRight[1]])
-            ];
-
             return (
               <Epoch
                 key={`${i}-${epochs.length}`}
@@ -152,9 +169,6 @@ const SeriesRenderer = ({
           vec2.add(axisEnd, subTopLeft, vec2.fromValues(0.1, subDiagonal[1]));
 
           const scales = [
-            scaleLinear()
-              .domain(domain)
-              .range([subTopLeft[0], subBottomRight[0]]),
             scaleLinear()
               .domain(interval)
               .range([subTopLeft[0], subBottomRight[0]]),
@@ -261,7 +275,18 @@ const SeriesRenderer = ({
                 </div>
               ))}
             </Col>
-            <Col xs={10}>
+            <Col
+              xs={10}
+              style={{ position: "relative" }}
+              onMouseLeave={() => setCursor(null)}
+            >
+              {cursor && (
+                <SeriesCursor
+                  cursor={cursor}
+                  scale={scales[0]}
+                  channels={channels}
+                />
+              )}
               <ResponsiveViewer transparent activeCamera="maincamera">
                 <DefaultOrthoCamera name="maincamera" />
                 <InteractionLayer />
@@ -297,6 +322,7 @@ export default connect(
   state => ({
     domain: state.bounds.domain,
     interval: state.bounds.interval,
+    cursor: state.cursor,
     channels: state.dataset.channels,
     epochs: state.dataset.epochs,
     channelMetadata: state.dataset.channelMetadata,
@@ -307,6 +333,10 @@ export default connect(
     setOffsetIndex: R.compose(
       dispatch,
       setOffsetIndex
+    ),
+    setCursor: R.compose(
+      dispatch,
+      setCursor
     )
   })
 )(SeriesRenderer);

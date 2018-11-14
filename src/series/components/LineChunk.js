@@ -5,6 +5,7 @@ import { scaleLinear } from "d3-scale";
 import { vec2 } from "gl-matrix";
 import React from "react";
 import * as THREE from "three";
+import { colorOrder } from "src/color";
 import type { Chunk } from "src/series/store/types";
 import Object2D from "./Object2D";
 import Line from "./Line";
@@ -57,7 +58,7 @@ type Props = {
   chunkIndex: number,
   chunk: Chunk,
   seriesRange: [number, number],
-  scales: [any, any, any],
+  scales: [any, any],
   color?: THREE.Color
 };
 
@@ -77,17 +78,19 @@ const LineChunk = ({
     return <Object2D />;
   }
 
-  const range = scales[2].range();
+  const range = scales[1].range();
 
-  const chunkLength = Math.abs(scales[1](interval[1]) - scales[1](interval[0]));
+  const chunkLength = Math.abs(scales[0](interval[1]) - scales[0](interval[0]));
   const chunkHeight = Math.abs(range[1] - range[0]);
 
   const p0 = vec2.fromValues(
-    (scales[1](interval[0]) + scales[1](interval[1])) / 2,
+    (scales[0](interval[0]) + scales[0](interval[1])) / 2,
     (range[0] + range[1]) / 2
   );
 
-  const lineColor = color || new THREE.Color("#000");
+  const lineColor = new THREE.Color(
+    colorOrder(traceIndex) || new THREE.Color("#000")
+  );
 
   return (
     <Object2D

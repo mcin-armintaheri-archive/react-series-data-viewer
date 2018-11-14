@@ -5,13 +5,15 @@ import { combineReducers } from "redux";
 import { combineEpics } from "redux-observable";
 import { boundsReducer } from "./state/bounds";
 import { datasetReducer } from "./state/dataset";
+import { cursorReducer } from "./state/cursor";
 import { createDragBoundsEpic } from "./logic/drag-bounds";
 import { createFetchChunksEpic } from "./logic/fetch-chunks";
 import { createPaginationEpic } from "./logic/pagination";
 
 export const rootReducer = combineReducers({
   bounds: boundsReducer,
-  dataset: datasetReducer
+  dataset: datasetReducer,
+  cursor: cursorReducer
 });
 
 export const rootEpic = combineEpics(
