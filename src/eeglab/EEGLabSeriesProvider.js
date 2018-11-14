@@ -7,7 +7,7 @@ import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
 import { createEpicMiddleware } from "redux-observable";
 import thunk from "redux-thunk";
-import fetchAjax from "src/ajax";
+import { fetchJSON, fetchText } from "src/ajax";
 import { rootReducer, rootEpic } from "src/series/store";
 import {
   setChannels,
@@ -52,10 +52,10 @@ export default class extends Component<Props> {
         ? chunkDirectoryURLs
         : [chunkDirectoryURLs];
 
-    const racers = (urls, route = "") =>
+    const racers = (fetcher, urls, route = "") =>
       urls.map(url =>
-        fetchAjax(`${url}${route}`)
-          .then(res => ({ res, url }))
+        fetcher(`${url}${route}`)
+          .then(json => ({ json, url }))
           // if request fails don't resolve
           .catch(error => {
             console.error(error);
@@ -63,9 +63,8 @@ export default class extends Component<Props> {
           })
       );
 
-    Promise.race(racers(chunkUrls, "/index.json"))
-      .then(({ res, url }) => res.json().then(json => ({ json, url })))
-      .then(({ json, url }) => {
+    Promise.race(racers(fetchJSON, chunkUrls, "/index.json")).then(
+      ({ json, url }) => {
         const { channelMetadata, shapes, timeInterval, seriesRange } = json;
         this.store.dispatch(
           setDatasetMetadata({
@@ -80,25 +79,24 @@ export default class extends Component<Props> {
         this.store.dispatch(setChannels(emptyChannels(this.props.limit, 1)));
         this.store.dispatch(setDomain(timeInterval));
         this.store.dispatch(setInterval(timeInterval));
-      });
+      }
+    );
 
     const epochUrls =
       epochsTableURLs instanceof Array ? epochsTableURLs : [epochsTableURLs];
 
-    Promise.race(racers(epochUrls))
-      .then(({ res }) => res.text())
-      .then(text => {
-        this.store.dispatch(
-          setEpochs(
-            tsvParse(text).map(({ onset, duration, trial_type }) => ({
-              onset: parseFloat(onset),
-              duration: parseFloat(duration),
-              type: trial_type,
-              channels: "all"
-            }))
-          )
-        );
-      });
+    Promise.race(racers(fetchText, epochUrls)).then(text => {
+      this.store.dispatch(
+        setEpochs(
+          tsvParse(text.json).map(({ onset, duration, trial_type }) => ({
+            onset: parseFloat(onset),
+            duration: parseFloat(duration),
+            type: trial_type,
+            channels: "all"
+          }))
+        )
+      );
+    });
   }
   render() {
     return <Provider store={this.store}>{this.props.children}</Provider>;

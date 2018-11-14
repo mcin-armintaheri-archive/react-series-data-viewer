@@ -17,6 +17,11 @@ module.exports = {
       ["module-resolver", { alias: { src: path.resolve("src") } }]
     ]
   },
+  webpack: {
+    html: {
+      template: "demo/src/index.html"
+    }
+  },
   devServer: {
     proxy: {
       "/test-data": {
