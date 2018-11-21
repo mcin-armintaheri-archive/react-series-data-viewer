@@ -164,7 +164,7 @@ def write_chunks(chunk_dir, channel_chunks_list):
 # Specific code
 
 def load_channels(path):
-    return mne.io.read_raw_eeglab(path, preload=True)
+    return mne.io.read_raw_eeglab(path, preload=False)
 
 
 def eeglab_to_chunks(path, chunk_size):
