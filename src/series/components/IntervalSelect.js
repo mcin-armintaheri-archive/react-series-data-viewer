@@ -3,6 +3,7 @@
 import * as R from "ramda";
 import { vec2 } from "gl-matrix";
 import React from "react";
+import { Group } from "@vx/vx";
 import { connect } from "react-redux";
 import * as THREE from "three";
 import { scaleLinear } from "d3-scale";
@@ -13,6 +14,7 @@ import {
   endDragInterval
 } from "../store/logic/drag-bounds";
 import ResponsiveViewer from "./ResponsiveViewer";
+import RenderLayer from "./RenderLayer";
 import DefaultOrthoCamera from "./DefaultOrthoCamera";
 import Object2D from "./Object2D";
 import Axis from "./Axis";
@@ -67,15 +69,15 @@ const IntervalSelect = ({
       />
     </Object2D>
   );
-  const AxisLayer = ({ domain }) => (
-    <Object2D position={center} layer={2}>
+  const AxisLayer = ({ viewerWidth, viewerHeight, domain }) => (
+    <Group>
       <Axis
         domain={domain}
+        range={[0, viewerWidth]}
         direction="bottom"
-        start={topLeft}
-        end={bottomRight}
+        y={viewerHeight - 1}
       />
-    </Object2D>
+    </Group>
   );
   const eventToInterval = (_, intersection) =>
     scale.invert(intersection && intersection.point.x);
@@ -102,10 +104,14 @@ const IntervalSelect = ({
   );
   return (
     <ResponsiveViewer transparent activeCamera="maincamera">
-      <DefaultOrthoCamera name="maincamera" />
-      <BackShadowLayer interval={interval} />
-      <AxisLayer domain={domain} />
-      <InteractionLayer start={topLeft} end={bottomRight} />
+      <RenderLayer svg>
+        <AxisLayer viewerWidth={0} viewerHeight={0} domain={domain} />
+      </RenderLayer>
+      <RenderLayer three>
+        <DefaultOrthoCamera name="maincamera" />
+        <BackShadowLayer interval={interval} />
+        <InteractionLayer start={topLeft} end={bottomRight} />
+      </RenderLayer>
     </ResponsiveViewer>
   );
 };

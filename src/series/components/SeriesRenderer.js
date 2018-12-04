@@ -4,6 +4,7 @@ import * as R from "ramda";
 import { vec2 } from "gl-matrix";
 import React from "react";
 import { Container, Row, Col, Input, ButtonGroup, Button } from "reactstrap";
+import { Group } from "@vx/vx";
 import { connect } from "react-redux";
 import { scaleLinear } from "d3-scale";
 import { DEFUALT_VIEW_BOUNDS, MAX_RENDERED_EPOCHS } from "src/vector";
@@ -15,6 +16,7 @@ import Rectangle from "./Rectangle";
 import LineChunk from "./LineChunk";
 import Epoch from "./Epoch";
 import SeriesCursor from "./SeriesCursor";
+import RenderLayer from "./RenderLayer";
 import { setCursor } from "src/series/store/state/cursor";
 import { setOffsetIndex } from "src/series/store/logic/pagination";
 import type {
@@ -97,22 +99,17 @@ const SeriesRenderer = ({
     </Object2D>
   );
 
-  const XAxisLayer = ({ interval }) => {
-    const start0 = topLeft;
-
-    const end0 = vec2.create();
-    vec2.add(end0, topLeft, vec2.fromValues(diagonal[0], -0.1));
-
-    const start1 = vec2.create();
-    vec2.add(start1, bottomRight, vec2.fromValues(-diagonal[0], 0.1));
-
-    const end1 = bottomRight;
-
+  const XAxisLayer = ({ viewerWidth, viewerHeight, interval }) => {
     return (
-      <Object2D position={center} layer={1}>
-        <Axis domain={interval} direction="top" start={start0} end={end0} />
-        <Axis domain={interval} direction="bottom" start={start1} end={end1} />
-      </Object2D>
+      <Group>
+        <Axis domain={interval} range={[0, viewerWidth]} direction="top" />
+        <Axis
+          domain={interval}
+          range={[0, viewerWidth]}
+          direction="bottom"
+          y={viewerHeight - 1}
+        />
+      </Group>
     );
   };
 
@@ -137,7 +134,18 @@ const SeriesRenderer = ({
       </Object2D>
     );
   };
-
+  const ChannelAxesLayer = ({ viewerWidth, viewerHeight }) => {
+    return (
+      <Axis
+        ticks={7}
+        padding={1}
+        domain={seriesRange}
+        range={[0, viewerHeight]}
+        y={viewerHeight - 1}
+        direction="left"
+      />
+    );
+  };
   const ChannelsLayer = () => {
     return (
       <Object2D position={center} layer={3}>
@@ -182,14 +190,6 @@ const SeriesRenderer = ({
               key={`${channel.index}-${channels.length}`}
               position={center}
             >
-              <Axis
-                ticks={8}
-                padding={2}
-                domain={seriesRange}
-                direction="left"
-                start={subTopLeft}
-                end={axisEnd}
-              />
               <Object2D layer={1}>
                 {channel.traces.map((trace, j) => {
                   return (
@@ -288,11 +288,20 @@ const SeriesRenderer = ({
                 />
               )}
               <ResponsiveViewer transparent activeCamera="maincamera">
-                <DefaultOrthoCamera name="maincamera" />
-                <InteractionLayer />
-                <XAxisLayer interval={interval} />
-                <EpochsLayer />
-                <ChannelsLayer />
+                <RenderLayer svg>
+                  <XAxisLayer
+                    viewerWidth={0}
+                    viewerHeight={0}
+                    interval={interval}
+                  />
+                  <ChannelAxesLayer viewerWidth={0} viewerHeight={0} />
+                </RenderLayer>
+                <RenderLayer three>
+                  <DefaultOrthoCamera name="maincamera" />
+                  <InteractionLayer />
+                  <EpochsLayer />
+                  <ChannelsLayer />
+                </RenderLayer>
               </ResponsiveViewer>
             </Col>
           </Row>

@@ -118,15 +118,17 @@ const CursorContent = ({ cursor, channel }) => {
         const chunk = trace.chunks.find(
           chunk => chunk.interval[0] <= cursor && chunk.interval[1] >= cursor
         );
+        const computeValue = chunk => {
+          const indices = createIndices(chunk.values);
 
-        const indices = chunk && createIndices(chunk.values);
+          const bisectTime = bisector(indexToTime(chunk)).left;
 
-        const bisectTime = bisector(indexToTime(chunk)).left;
+          const idx = bisectTime(indices, cursor);
 
-        const idx = chunk && bisectTime(indices, cursor);
+          const value = chunk.values[idx];
 
-        const value = chunk && chunk.values[idx];
-
+          return value;
+        };
         return (
           <div
             key={`${i}-${channel.traces.length}`}
@@ -138,7 +140,7 @@ const CursorContent = ({ cursor, channel }) => {
               borderRadius: "3px"
             }}
           >
-            <Marker color={colorOrder(i)} /> {value}{" "}
+            <Marker color={colorOrder(i)} /> {chunk && computeValue(chunk)}{" "}
           </div>
         );
       })}
