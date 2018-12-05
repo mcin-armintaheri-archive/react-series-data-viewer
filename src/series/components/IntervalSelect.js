@@ -70,13 +70,8 @@ const IntervalSelect = ({
     </Object2D>
   );
   const AxisLayer = ({ viewerWidth, viewerHeight, domain }) => (
-    <Group>
-      <Axis
-        domain={domain}
-        range={[0, viewerWidth]}
-        direction="bottom"
-        y={viewerHeight - 1}
-      />
+    <Group top={viewerHeight - 1}>
+      <Axis domain={domain} range={[0, viewerWidth]} orientation="top" />
     </Group>
   );
   const eventToInterval = (_, intersection) =>

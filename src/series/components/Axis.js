@@ -2,10 +2,10 @@
 
 import React from "react";
 import { scaleLinear } from "d3-scale";
-import {} from "@vx/vx";
+import { Axis as VxAxis } from "@vx/vx";
 
 type Props = {
-  direction: "bottom" | "right" | "top" | "left",
+  orientation: "top" | "right" | "bottom" | "left",
   domain: [number, number],
   range: [number, number],
   ticks: number,
@@ -13,8 +13,29 @@ type Props = {
   format: number => string
 };
 
-const Axis = ({ direction, domain, range, ticks, padding, format }: Props) => {
-  return null;
+const Axis = ({
+  orientation,
+  domain,
+  range,
+  ticks,
+  padding,
+  format
+}: Props) => {
+  const scale = scaleLinear()
+    .domain(domain)
+    .range(range);
+
+  let tickValues = scale.ticks(ticks);
+  tickValues = tickValues.slice(padding, tickValues.length - padding);
+
+  return (
+    <VxAxis
+      scale={scale}
+      orientation={orientation}
+      tickValues={tickValues}
+      tickFormat={format}
+    />
+  );
 };
 
 Axis.defaultProps = {

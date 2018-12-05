@@ -102,13 +102,16 @@ const SeriesRenderer = ({
   const XAxisLayer = ({ viewerWidth, viewerHeight, interval }) => {
     return (
       <Group>
-        <Axis domain={interval} range={[0, viewerWidth]} direction="top" />
-        <Axis
-          domain={interval}
-          range={[0, viewerWidth]}
-          direction="bottom"
-          y={viewerHeight - 1}
-        />
+        <Group>
+          <Axis
+            domain={interval}
+            range={[0, viewerWidth]}
+            orientation="bottom"
+          />
+        </Group>
+        <Group top={viewerHeight - 1}>
+          <Axis domain={interval} range={[0, viewerWidth]} orientation="top" />
+        </Group>
       </Group>
     );
   };
@@ -135,15 +138,23 @@ const SeriesRenderer = ({
     );
   };
   const ChannelAxesLayer = ({ viewerWidth, viewerHeight }) => {
+    const axisHeight = viewerHeight / filteredChannels.length;
     return (
-      <Axis
-        ticks={7}
-        padding={1}
-        domain={seriesRange}
-        range={[0, viewerHeight]}
-        y={viewerHeight - 1}
-        direction="left"
-      />
+      <Group>
+        {filteredChannels.map((channel, i) => {
+          const seriesRange = channelMetadata[channel.index].seriesRange;
+          return (
+            <Axis
+              key={`${channel.index}`}
+              padding={2}
+              domain={seriesRange}
+              range={[i * axisHeight, (i + 1) * axisHeight]}
+              format={tick => ""}
+              orientation="right"
+            />
+          );
+        })}
+      </Group>
     );
   };
   const ChannelsLayer = () => {
