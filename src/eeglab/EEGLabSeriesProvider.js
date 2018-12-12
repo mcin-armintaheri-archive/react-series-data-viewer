@@ -1,8 +1,5 @@
-// @flow
-
 import { tsvParse } from "d3-dsv";
 import React, { Component } from "react";
-import type { Node } from "react";
 import { createStore, applyMiddleware } from "redux";
 import { Provider } from "react-redux";
 import { createEpicMiddleware } from "redux-observable";
@@ -18,19 +15,7 @@ import {
 import { setDomain, setInterval } from "src/series/store/state/bounds";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-type Props = {
-  // electrodesTableURL: string,
-  epochsTableURLs: string | string[],
-  chunkDirectoryURLs: string | string[],
-  limit: number,
-  children?: Node
-};
-
-export default class extends Component<Props> {
-  store: any;
-  static defaultProps = {
-    limit: 6
-  };
+class EEGLabSeriesProvider extends Component {
   constructor(props: Props) {
     super(props);
     const epicMiddleware = createEpicMiddleware();
@@ -102,3 +87,9 @@ export default class extends Component<Props> {
     return <Provider store={this.store}>{this.props.children}</Provider>;
   }
 }
+
+EEGLabSeriesProvider.defaultProps = {
+  limit: 6
+};
+
+export default EEGLabSeriesProvider;

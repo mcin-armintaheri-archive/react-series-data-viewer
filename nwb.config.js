@@ -5,6 +5,7 @@ module.exports = {
   npm: {
     esModules: true,
     umd: {
+      entry: path.resolve("src") + "/umd.js",
       global: "ReactSeriesDataViewer",
       externals: {
         react: "React"
@@ -15,7 +16,8 @@ module.exports = {
     plugins: [
       "flow-react-proptypes",
       ["module-resolver", { alias: { src: path.resolve("src") } }]
-    ]
+    ],
+    presets: ["env", "flow"]
   },
   webpack: {
     html: {
