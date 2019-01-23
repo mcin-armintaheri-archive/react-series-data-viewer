@@ -29,3 +29,8 @@ export type Epoch = {
   type: string,
   channels: number[] | "all"
 };
+
+export type Electrode = {
+  channelIndex: number,
+  position: [number, number, number]
+};

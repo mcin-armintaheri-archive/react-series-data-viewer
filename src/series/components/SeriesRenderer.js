@@ -345,6 +345,7 @@ export default connect(
     cursor: state.cursor,
     channels: state.dataset.channels,
     epochs: state.dataset.epochs,
+    hidden: state.montage.hidden,
     channelMetadata: state.dataset.channelMetadata,
     seriesRange: state.dataset.seriesRange,
     offsetIndex: state.dataset.offsetIndex
