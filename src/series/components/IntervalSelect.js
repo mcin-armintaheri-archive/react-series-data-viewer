@@ -74,38 +74,33 @@ const IntervalSelect = ({
       <Axis domain={domain} range={[0, viewerWidth]} orientation="top" />
     </Group>
   );
-  const eventToInterval = (_, intersection) =>
-    scale.invert(intersection && intersection.point.x);
-  const InteractionLayer = () => (
-    <Object2D position={center} layer={0}>
-      <Rectangle
-        start={topLeft}
-        end={bottomRight}
-        opacity={0}
-        onMouseDown3D={R.compose(
-          dragStart,
-          eventToInterval
-        )}
-        onMouseMove3D={R.compose(
-          dragContinue,
-          eventToInterval
-        )}
-        onMouseUp3D={R.compose(
-          dragEnd,
-          eventToInterval
-        )}
-      />
-    </Object2D>
-  );
+
   return (
-    <ResponsiveViewer transparent activeCamera="maincamera">
+    <ResponsiveViewer
+      transparent
+      activeCamera="maincamera"
+      mouseDown={R.compose(
+        dragStart,
+        scale.invert,
+        R.nth(0)
+      )}
+      mouseMove={R.compose(
+        dragContinue,
+        scale.invert,
+        R.nth(0)
+      )}
+      mouseUp={R.compose(
+        dragEnd,
+        scale.invert,
+        R.nth(0)
+      )}
+    >
       <RenderLayer svg>
         <AxisLayer viewerWidth={0} viewerHeight={0} domain={domain} />
       </RenderLayer>
       <RenderLayer three>
         <DefaultOrthoCamera name="maincamera" />
         <BackShadowLayer interval={interval} />
-        <InteractionLayer start={topLeft} end={bottomRight} />
       </RenderLayer>
     </ResponsiveViewer>
   );

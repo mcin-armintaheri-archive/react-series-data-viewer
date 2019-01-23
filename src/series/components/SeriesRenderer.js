@@ -82,23 +82,6 @@ const SeriesRenderer = ({
 
   const filteredChannels = channels.filter((_, i) => !hidden.includes(i));
 
-  const eventToInterval = (_, intersection) =>
-    scales[0].invert(intersection && intersection.point.x);
-
-  const InteractionLayer = () => (
-    <Object2D position={center} layer={0}>
-      <Rectangle
-        start={topLeft}
-        end={bottomRight}
-        opacity={0}
-        onMouseMove3D={R.compose(
-          setCursor,
-          eventToInterval
-        )}
-      />
-    </Object2D>
-  );
-
   const XAxisLayer = ({ viewerWidth, viewerHeight, interval }) => {
     return (
       <Group>
@@ -298,7 +281,15 @@ const SeriesRenderer = ({
                   channels={channels}
                 />
               )}
-              <ResponsiveViewer transparent activeCamera="maincamera">
+              <ResponsiveViewer
+                transparent
+                activeCamera="maincamera"
+                mouseMove={R.compose(
+                  setCursor,
+                  scales[0].invert,
+                  R.nth(0)
+                )}
+              >
                 <RenderLayer svg>
                   <XAxisLayer
                     viewerWidth={0}
@@ -309,7 +300,6 @@ const SeriesRenderer = ({
                 </RenderLayer>
                 <RenderLayer three>
                   <DefaultOrthoCamera name="maincamera" />
-                  <InteractionLayer />
                   <EpochsLayer />
                   <ChannelsLayer />
                 </RenderLayer>
