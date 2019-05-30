@@ -12,12 +12,10 @@ import {
 import pkg from "../../package.json";
 
 const chunkDirectoryURLs = [
-  "/test-data/sub-s01/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg.chunks",
   "https://s3.amazonaws.com/aces-vis-demo-data/public/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg.chunks"
 ];
 
 const epochsTableURLs = [
-  "/test-data/sub-s01/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg_events.tsv",
   "https://s3.amazonaws.com/aces-vis-demo-data/public/ses-V01/eeg/sub-s01_ses-V01_task-faceFO_eeg_events.tsv"
 ];
 
