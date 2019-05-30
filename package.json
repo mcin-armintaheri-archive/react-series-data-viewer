@@ -1,6 +1,6 @@
 {
   "name": "react-series-data-viewer",
-  "homepage": "https://armintaheri.github.io/react-series-data-viewer",
+  "homepage": "https://mcin-armintaheri-archive.github.io/react-series-data-viewer",
   "version": "1.0.0",
   "description": "react-series-data-viewer React component",
   "main": "lib/index.js",
@@ -77,7 +77,7 @@
   },
   "author": "",
   "license": "MIT",
-  "repository": "https://github.com/ArminTaheri/react-series-data-viewer",
+  "repository": "https://github.com/mcin-armintaheri-archive/react-series-data-viewer",
   "keywords": [
     "react-component"
   ]
