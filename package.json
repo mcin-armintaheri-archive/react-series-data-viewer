@@ -50,7 +50,7 @@
     "redux-thunk": "^2.3.0",
     "resize-observer-polyfill": "^1.5.0",
     "rxjs": "^6.3.3",
-    "three": "^0.83.0"
+    "three": "^0.137.0"
   },
   "peerDependencies": {
     "react": "16.x"
